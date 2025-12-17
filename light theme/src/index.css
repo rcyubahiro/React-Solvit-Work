@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Global defaults */
+html,
+body {
+  @apply bg-gray-100 text-gray-800 antialiased;
+}
+
+/* Optional: smooth scrolling */
+* {
+  scroll-behavior: smooth;
+}
