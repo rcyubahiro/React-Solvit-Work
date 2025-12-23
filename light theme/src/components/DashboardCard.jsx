@@ -14,7 +14,7 @@ const DashboardCard = ({
   return (
     <Card className={`${className}`} hover>
       <div className="flex items-center gap-4">
-        <div className={`${iconBgColor} ${iconColor} p-3 rounded-lg flex-shrink-0`}>
+        <div className={`${iconBgColor} ${iconColor} p-3 rounded-lg shrink-0`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">

@@ -67,7 +67,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <Card className=" bg-gradient-to-r from-blue-500 to-blue-600 border-0 text-black shadow-lg" padding="lg">
+      <Card className=" bg-linear-to-r from-blue-500 to-blue-600 border-0 text-black shadow-lg" padding="lg">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 bg-blue-400 text-white bg-opacity-20 rounded-lg flex items-center justify-center shrink-0">
             <Package className="w-7 h-7" />
@@ -88,18 +88,17 @@ const Dashboard = () => {
       </Card>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:  gap-6">
-        {stats. map((stat, index) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
+        {stats.map((stat, index) => (
           <DashboardCard key={index} {...stat} />
         ))}
       </div>
-
       {/* Recent Products */}
       <Card>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900">Recent Added Products</h3>
         </div>
-        <div className="grid grid-cols-1 md: grid-cols-2 lg: grid-cols-3 gap-4">
+        <div className="grid lg:grid-cols-3 gap-4">
           {recentProducts.map((product, index) => (
             <div key={index} className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:shadow-sm transition-all">
               <div className="flex items-start justify-between mb-2">
@@ -178,7 +177,7 @@ const Dashboard = () => {
       </Card>
 
       {/* Recent Activity & Quick Actions - MOVED TO END */}
-      <div className="grid grid-cols-1 lg: grid-cols-3 gap-6">
+      <div className="grid lg: grid-cols-3 gap-6">
         {/* Recent Activity */}
         <div className="lg:col-span-2">
           <Card>

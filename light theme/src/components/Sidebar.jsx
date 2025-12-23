@@ -59,10 +59,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 href="#"
                 className={`
                   flex items-center justify-between px-4 py-3 rounded-lg
-                  transition-colors duration-150
+                  transition-colors duration-150 hover:bg-blue-200 
                   ${item.active 
                     ? 'bg-primary-50 text-primary-600 font-medium' 
-                    :  'text-gray-700 hover:bg-gray-50'
+                    :  'text-black-700 hover:bg-green-5000 hover:text-white-900'
                   }
                 `}
               >
@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         {/* Logout */}
         <div className="p-4 border-t border-gray-200">
-          <button className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg w-full transition-colors duration-150">
+          <button className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-red-500 rounded-lg w-full transition-colors duration-150">
             <LogOut className="w-5 h-5" />
             <span className="font-medium">Logout</span>
           </button>
