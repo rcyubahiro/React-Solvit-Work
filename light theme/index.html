@@ -1,13 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/x-icon" href="available.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>light-theme</title>
+    <title>iHUZA Inventory Dashboard</title>
+    <script>
+      // Respect stored theme before React loads to avoid flash
+      (function() {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
+    <div id="root" class="min-h-screen"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

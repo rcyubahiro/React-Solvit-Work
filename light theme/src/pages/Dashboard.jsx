@@ -1,245 +1,296 @@
 import React from 'react';
-import DashboardCard from '../components/DashboardCard';
+import { Link } from 'react-router-dom';
 import Card from '../components/Card';
 import Button from '../components/Button';
+import { useAuth } from '../context/AuthContext';
+import { useUsers } from '../context/UserContext';
+import { useProducts } from '../context/ProductContext';
+import { useAssignments } from '../context/AssignmentContext';
+import { useActivities } from '../context/ActivityContext';
 import { 
   Users, 
   Package, 
   CheckCircle, 
   AlertTriangle,
   Box,
-  AlignJustify
+  ClipboardList,
+  User
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const { users } = useUsers();
+  const { products } = useProducts();
+  const { assignments } = useAssignments();
+  const { activities } = useActivities();
+
+  const assignedCount = assignments.filter(a => a.status === 'active').length;
+  const unassignedCount = products.length - assignedCount;
+
+  const formatRelativeTime = (isoString) => {
+    if (!isoString) return '—';
+    // If already a human string
+    if (typeof isoString === 'string' && /ago|just now/i.test(isoString)) return isoString;
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '—';
+    const diffMs = Date.now() - date.getTime();
+    if (diffMs < 0) return '—';
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  };
+
   const stats = [
     {
       icon: <Users className="w-6 h-6" />,
       iconBgColor: 'bg-blue-100',
-      iconColor: 'text-primary-600',
-      value: '116',
+      iconColor: 'text-blue-600',
+      value: users.length.toString(),
       label: 'Total Users',
     },
     {
-      icon:    <Package className="w-6 h-6" />,
+      icon: <Package className="w-6 h-6" />,
       iconBgColor: 'bg-blue-100',
-      iconColor:    'text-primary-600',
-      value: '100',
+      iconColor: 'text-blue-600',
+      value: products.length.toString(),
       label: 'Total Products',
     },
     {
       icon: <CheckCircle className="w-6 h-6" />,
       iconBgColor: 'bg-green-100',
-      iconColor:   'text-green-600',
-      value: '10',
+      iconColor: 'text-green-600',
+      value: assignedCount.toString(),
       label: 'Assigned Products',
     },
     {
       icon: <AlertTriangle className="w-6 h-6" />,
       iconBgColor: 'bg-yellow-100',
-      iconColor:    'text-yellow-600',
-      value: '90',
+      iconColor: 'text-yellow-600',
+      value: unassignedCount.toString(),
       label: 'Unassigned Products',
     },
   ];
 
-  const recentProducts = [
-    { name: 'MacBook Pro 16"', category: 'Laptops', date: 'Dec 10, 2024', status:   'In Stock', statusColor:   'bg-green-100 text-green-700' },
-    { name: 'Dell XPS 13', category: 'Laptops', date: 'Dec 9, 2024', status: 'In Stock', statusColor: 'bg-green-100 text-green-700' },
-    { name: 'iPhone 15 Pro', category: 'Mobile', date: 'Dec 8, 2024', status: 'Low Stock', statusColor: 'bg-yellow-100 text-yellow-700' },
-    { name: 'iPad Air', category:   'Tablets', date: 'Dec 7, 2024', status: 'In Stock', statusColor: 'bg-green-100 text-green-700' },
-    { name: 'Surface Pro 9', category:  'Tablets', date: 'Dec 6, 2024', status: 'Out of Stock', statusColor: 'bg-red-100 text-red-700' },
+  const recentProducts = products.slice(0, 5).map(product => ({
+    ...product,
+    statusColor: product.status === 'In Stock' 
+      ? 'bg-green-100 text-green-700' 
+      : product.status === 'Low Stock' 
+        ? 'bg-yellow-100 text-yellow-700'
+        : 'bg-red-100 text-red-700'
+  }));
+
+  const getActivityIcon = (type) => {
+    switch (type) {
+      case 'product_added':
+      case 'product_updated':
+      case 'product_deleted':
+        return { icon: <Package className="w-5 h-5" />, bg: 'bg-blue-100', color: 'text-blue-600' };
+      case 'category_added':
+      case 'category_updated':
+      case 'category_deleted':
+        return { icon: <ClipboardList className="w-5 h-5" />, bg: 'bg-purple-100', color: 'text-purple-600' };
+      case 'assignment_created':
+      case 'assignment_updated':
+      case 'assignment_deleted':
+        return { icon: <ClipboardList className="w-5 h-5" />, bg: 'bg-green-100', color: 'text-green-600' };
+      case 'user_added':
+      case 'user_updated':
+      case 'user_deleted':
+        return { icon: <User className="w-5 h-5" />, bg: 'bg-indigo-100', color: 'text-indigo-600' };
+      default:
+        return { icon: <Package className="w-5 h-5" />, bg: 'bg-gray-100', color: 'text-gray-600' };
+    }
+  };
+
+  const formattedActivities = activities.slice(0, 5).map(activity => {
+    const iconData = getActivityIcon(activity.type);
+    return {
+      ...activity,
+      icon: iconData.icon,
+      iconBg: iconData.bg,
+      iconColor: iconData.color,
+      time: formatRelativeTime(activity.timestamp)
+    };
+  });
+
+  const quickActions = [
+    { name: 'View Users', desc: 'View all registered users', icon: <Users className="w-5 h-5" />, iconBg: 'bg-blue-100', iconColor: 'text-blue-600', path: '/users', bgGradient: 'from-blue-50 to-blue-100/50' },
+    { name: 'View Products', desc: 'View all registered products', icon: <Package className="w-5 h-5" />, iconBg: 'bg-blue-100', iconColor: 'text-blue-600', path: '/products', bgGradient: 'from-purple-50 to-purple-100/50' },
+    { name: 'View Assignments', desc: 'View all product assignments', icon: <ClipboardList className="w-5 h-5" />, iconBg: 'bg-purple-100', iconColor: 'text-purple-600', path: '/assignments', bgGradient: 'from-indigo-50 to-indigo-100/50' },
   ];
 
-  const users = [
-    { name: "John Smith", email: "john.  smith@ihuza.com", role: "Admin", status: "Active", lastLogin: "2 hours ago" },
-    { name: "Sarah Johnson", email:  "sarah.j@ihuza.  com", role: "Manager", status: "Active", lastLogin: "5 hours ago" },
-    { name: "Michael Brown", email:   "m.brown@ihuza.com", role: "Staff", status: "Active", lastLogin:  "1 day ago" },
-    { name:  "Emily Davis", email: "emily.  d@ihuza.com", role: "Staff", status: "Inactive", lastLogin: "3 days ago" },
-    { name:  "David Wilson", email:   "d.wilson@ihuza.com", role: "Staff", status: "Active", lastLogin: "6 hours ago" },
-    { name:  "Lisa Anderson", email:   "l.anderson@ihuza.com", role: "Manager", status: "Active", lastLogin: "30 min ago" },
-    { name:  "Robert Tyler", email:   "r.tyler@ihuza.com", role: "Staff", status: "Active", lastLogin: "2 days ago" },
-    { name:  "Jennifer Miller", email:   "j.miller@ihuza.com", role: "Staff", status: "Active", lastLogin: "4 hours ago" },
-    { name:  "Christopher Lee", email:   "c.lee@ihuza.com", role: "Admin", status: "Active", lastLogin: "1 hours ago" },
-    { name:  "Amanda White", email:   "a.white@ihuza.com", role: "Staff", status: "Inactive", lastLogin: "1 week ago" },
-  ];
+  const getRoleBadgeColor = (role) => {
+    switch ((role || '').toLowerCase()) {
+      case 'admin':
+      case 'manager':
+        return 'bg-blue-100 text-blue-700 border border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-600 border border-gray-200';
+    }
+  };
+
+  const getStatusBadgeColor = (status) => {
+    return status === 'Active'
+      ? 'bg-green-100 text-green-700'
+      : 'bg-red-100 text-red-700';
+  };
 
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <Card className=" bg-linear-to-r from-blue-500 to-blue-600 border-0 text-black shadow-lg" padding="lg">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-blue-400 text-white bg-opacity-20 rounded-lg flex items-center justify-center shrink-0">
-            <Package className="w-7 h-7" />
+      <div className="relative overflow-hidden bg-linear-to-r from-primary-600 via-primary-500 to-blue-500 rounded-2xl shadow-lg p-6 md:p-8">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative z-10 flex items-start gap-4">
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 shrink-0">
+            <Box className="w-6 h-6 text-white" />
           </div>
-          <div className="flex-1 bg-color-black ">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-              iHUZA INVENTORY - System Overview
-            </h2>
-            <p className="text-primary-100 mb-4">
-              Monitor your iHUZA inventory and product assignments in real-time.  
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">iHUZA INVENTORY - System Overview</h2>
+            <p className="text-blue-100 mb-4 max-w-xl">
+              Monitor your iHUZA inventory and product assignments in real-time.
             </p>
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle className="w-5 h-5 text-green-300" />
-              <span>All Systems Operational</span>
+            <div className="flex items-center gap-2 text-white">
+              <CheckCircle className="w-5 h-5" />
+              <span className="font-medium">All Systems Operational</span>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <DashboardCard key={index} {...stat} />
+          <Card key={index}>
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 ${stat.iconBgColor} rounded-xl flex items-center justify-center shrink-0`}>
+                <div className={stat.iconColor}>{stat.icon}</div>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-sm text-gray-600">{stat.label}</p>
+              </div>
+            </div>
+          </Card>
         ))}
       </div>
+
       {/* Recent Products */}
-      <Card>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Recent Added Products</h3>
-        </div>
-        <div className="grid lg:grid-cols-3 gap-4">
-          {recentProducts.map((product, index) => (
-            <div key={index} className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:shadow-sm transition-all">
-              <div className="flex items-start justify-between mb-2">
-                <h4 className="font-semibold text-gray-900">{product.name}</h4>
-                <span className={`text-xs px-2 py-1 rounded font-medium ${product.statusColor}`}>
+      <div>
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Recent Added Products</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {recentProducts.map((product) => (
+            <Card key={product.id} className="hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-gray-900 truncate">{product.name}</h4>
+                  <p className="text-sm text-gray-500">{product.category}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {product.createdAt ? new Date(product.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                  </p>
+                </div>
+                <span className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${product.statusColor}`}>
                   {product.status}
                 </span>
               </div>
-              <p className="text-sm text-gray-600">{product.category}</p>
-              <p className="text-xs text-gray-500 mt-1">{product.date}</p>
-            </div>
+            </Card>
           ))}
         </div>
-      </Card>
+      </div>
 
-      {/* Users Table */}
-      <Card>
-        <div className=" text-white-600 flex items-center justify-between mb-6">
-          <h3 className="border-b border-gray-200 text-lg font-bold text-gray-900">Recent Users</h3>
-          <Button variant="primary" size="sm">Add User</Button>
+      {/* Users Summary (Admin only) */}
+      {user?.role === 'admin' && (
+        <div>
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Users</h3>
+              <Link to="/users">
+                <Button variant="primary" size="sm">Add User</Button>
+              </Link>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Logout</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(users || []).slice(0, 6).map((u) => (
+                    <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-gray-500" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{u.name}</p>
+                            <p className="text-sm text-gray-500">{u.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium capitalize ${getRoleBadgeColor(u.role)}`}>
+                          {u.role || 'Staff'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusBadgeColor(u.status || 'Active')}`}>
+                          {u.status || 'Active'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500">{formatRelativeTime(u.lastLogout)}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <Link to="/users" className="text-blue-600 hover:text-blue-700 font-medium text-sm">Edit</Link>
+                          <Link to="/users" className="text-red-600 hover:text-red-700 font-medium text-sm">Delete</Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 uppercase">User</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 uppercase">Role</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 uppercase">Status</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 uppercase">Last Login</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <Users className="w-4 h-4 text-gray-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{user.name}</p>
-                        <p className="text-sm text-gray-500">{user. email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`text-xs px-2 py-1 rounded font-medium ${
-                      user.role === 'Admin' ? 'bg-purple-100 text-purple-700' :
-                      user.  role === 'Manager' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`text-xs px-2 py-1 rounded font-medium ${
-                      user.status === 'Active' ? 'bg-green-100 text-green-700' :  'bg-red-100 text-red-700'
-                    }`}>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-600">{user.lastLogin}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">Edit</button>
-                      <button className="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      )}
 
-      {/* Recent Activity & Quick Actions - MOVED TO END */}
-      <div className="grid lg: grid-cols-3 gap-6">
+      {/* Activity & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activity */}
         <div className="lg:col-span-2">
           <Card>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
-              <a href="#" className="text-sm text-gray-400 hover:text-gray-600 font-medium variant='bordered'">View all</a>
+              <a href="#" className="text-sm text-gray-500 hover:text-primary-600">View all</a>
             </div>
             <div className="space-y-4">
-              <div className="flex gap-4 items-start">
-                <div className="bg-blue-50 text-blue-600 p-3 rounded-xl h-fit">
-                  <Package className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">Product added to inventory</p>
-                  <p className="text-sm text-gray-500 mt-1">MacBook Pro 16" M3 (PROD2024001)</p>
-                  <p className="text-xs text-gray-400 mt-1">Dec 4, 2024</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="bg-blue-50 text-blue-600 p-3 rounded-xl h-fit">
-                  <Package className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">Product assigned to Sarah Johnson</p>
-                  <p className="text-sm text-gray-500 mt-1">Dell ThinkPad X1 Carbon (PROD2024001)</p>
-                  <p className="text-xs text-gray-400 mt-1">Dec 3, 2024</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="bg-blue-50 text-blue-600 p-3 rounded-xl h-fit">
-                  <Package className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">Product assigned to Michael Brown</p>
-                  <p className="text-sm text-gray-500 mt-1">Apple MacBook Air M2 (PROD2024001)</p>
-                  <p className="text-xs text-gray-400 mt-1">Dec 2, 2024</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="bg-yellow-50 text-yellow-600 p-3 rounded-xl h-fit">
-                  <AlertTriangle className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">Product sent for maintenance</p>
-                  <p className="text-sm text-gray-500 mt-1">HP Spectre x360 - Screen replacement required</p>
-                  <p className="text-xs text-gray-400 mt-1">Jan 16, 2024</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="bg-green-50 text-green-600 p-3 rounded-xl h-fit">
-                  <Users className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">New user registered</p>
-                  <p className="text-sm text-gray-500 mt-1">Amanda White - Staff Member</p>
-                  <p className="text-xs text-gray-400 mt-1">Jan 14, 2024</p>
-                </div>
-              </div>
+              {formattedActivities.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">No activities yet</p>
+              ) : (
+                formattedActivities.map((activity) => (
+                  <div key={activity.id} className="flex gap-4">
+                    <div className={`w-10 h-10 ${activity.iconBg} rounded-full flex items-center justify-center shrink-0`}>
+                      <div className={activity.iconColor}>{activity.icon}</div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900">{activity.title}</p>
+                      <p className="text-sm text-gray-500 truncate">{activity.desc}</p>
+                      <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </Card>
         </div>
@@ -247,46 +298,26 @@ const Dashboard = () => {
         {/* Quick Actions */}
         <div>
           <Card>
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
-            <div className="space-y-4">
-              <div className="p-5 bg-blue-50 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-4">
-                    <Users className="w-6 h-6 text-blue-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-lg">View Users</p>
-                      <p className="text-sm text-gray-600 mt-1">View all registered users</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              {quickActions.map((action, index) => (
+                <div key={index} className={`bg-linear-to-r ${action.bgGradient} border border-gray-100 rounded-xl p-4`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 ${action.iconBg} rounded-lg flex items-center justify-center`}>
+                        <div className={action.iconColor}>{action.icon}</div>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{action.name}</p>
+                        <p className="text-xs text-gray-500">{action.desc}</p>
+                      </div>
                     </div>
+                    <Link to={action.path}>
+                      <Button variant="primary" size="sm">Go</Button>
+                    </Link>
                   </div>
-                  <Button variant="primary" size="md">Go</Button>
                 </div>
-              </div>
-
-              <div className="p-5 bg-blue-50 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-4">
-                    <Package className="w-6 h-6 text-blue-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-lg">View Products</p>
-                      <p className="text-sm text-gray-600 mt-1">View all registered products</p>
-                    </div>
-                  </div>
-                  <Button variant="primary" size="md">Go</Button>
-                </div>
-              </div>
-
-              <div className="p-5 bg-purple-50 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-4">
-                    <AlignJustify className="w-6 h-6 text-purple-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-lg">View Assignments</p>
-                      <p className="text-sm text-gray-600 mt-1">View all product assignments</p>
-                    </div>
-                  </div>
-                  <Button variant="purple" size="md">Go</Button>
-                </div>
-              </div>
+              ))}
             </div>
           </Card>
         </div>

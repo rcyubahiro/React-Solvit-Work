@@ -1,0 +1,8 @@
+finalizing the remaining screens and implementing full CRUD functionality using the useContext hook and localStorage. All screens must be fully responsive.
+The screens to be designed include:
+Products
+Categories
+Users
+Login and Register (for inventory owners to create and access their accounts)
+Only the admin should have access to the Users routes, and make sure all routes are protected for non-logged-in users. Lastly, add a dark theme to your assignment.
+Key note: CRUD functionality is required for products, users, and categories.
