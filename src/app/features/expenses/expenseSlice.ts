@@ -1,12 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import type { Expense } from "@/types/expenseType";
 
 // Define the structure of an expense
-interface Expense {
-  id: number;
-  title: string;
-  amount: number;
-}
 
 // Define the state structure for expenses
 interface ExpenseState {

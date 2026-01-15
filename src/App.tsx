@@ -5,6 +5,7 @@ import {
   useUpdateProductMutation,
 } from "./app/api/product";
 import ExpenseTracker from "./pages/ExpenseTracker";
+import Login from "@/pages/Login";
 
 function App() {
   const [title, setTitle] = useState("");
@@ -45,6 +46,7 @@ function App() {
 
   return (
     <div className="m-8 w-full h-dvh ">
+      {/* <Login /> */}
       <form
         action=""
         encType="multipart/form-data"
@@ -65,7 +67,6 @@ function App() {
           onChange={(e) => setPrice(Number(e.target.value))}
           className="border border-slate-400 px-3 py-2 rounded-md"
         />
-        input
         <button
           type="submit"
           className="py-2 px-4 bg-green-700 text-white rounded-md shadow-md"

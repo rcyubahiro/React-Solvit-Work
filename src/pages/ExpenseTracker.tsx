@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addExpense,
   removeExpense,
-} from "../app/features/expenses/expenseSlice";
-
+} from "@/app/features/expenses/expenseSlice";
+  
 function ExpenseTracker() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState<number>(0);
