@@ -1,10 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_API_BASE_URL,
+  baseUrl: 'https://dummyjson.com',
   prepareHeaders: (headers) => {
     // If you have authentication tokens, you can set them here
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -13,6 +13,8 @@ const baseQuery = fetchBaseQuery({
 });
 
 export const apiSlice = createApi({
+  reducerPath: 'api',
   baseQuery,
+  tagTypes: ['Recipe', 'User'],
   endpoints: () => ({}),
 });

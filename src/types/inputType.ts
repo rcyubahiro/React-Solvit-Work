@@ -8,5 +8,6 @@ interface InputProps extends BaseProps {
   type?: "text" | "email" | "password";
   placeholder?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
 }
 export type { InputProps };
